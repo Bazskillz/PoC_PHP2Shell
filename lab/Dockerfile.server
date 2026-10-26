@@ -1,0 +1,23 @@
+# Vulnerable PHP 8.4.26 + Apache mod_php (prefork MPM)
+# Default configuration — no hardening applied
+FROM php:8.4.26-apache
+
+# Ensure prefork MPM is used (mod_php requires it)
+RUN a2dismod mpm_event 2>/dev/null || true && \
+    a2dismod mpm_worker 2>/dev/null || true && \
+    a2enmod mpm_prefork
+
+# Verify session.upload_progress is enabled (default)
+RUN php -r 'echo "upload_progress.enabled: " . ini_get("session.upload_progress.enabled") . "\n";' && \
+    php -r 'echo "memory_limit: " . ini_get("memory_limit") . "\n";'
+
+# Minimal PHP script — the vulnerability is in request parsing,
+# so the script content doesn't matter
+RUN echo '<?php echo "PHP " . phpversion() . " OK\n"; ?>' > /var/www/html/index.php
+
+# Enable error display for debugging (common in dev, but vuln works either way)
+RUN echo 'display_errors = On' >> /usr/local/etc/php/conf.d/docker-php-errors.ini && \
+    echo 'error_reporting = E_ALL' >> /usr/local/etc/php/conf.d/docker-php-errors.ini && \
+    echo 'log_errors = On' >> /usr/local/etc/php/conf.d/docker-php-errors.ini
+
+EXPOSE 80

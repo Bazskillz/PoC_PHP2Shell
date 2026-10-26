@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  php-vulnerable:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: cve2026109618-php
+    networks:
+      - vuln-net
+    ports:
+      - "8080:80"
+    # Default config — no memory overrides
+    # memory_limit=128M (PHP default)
+
+  attacker:
+    build:
+      context: ..
+      dockerfile: lab/Dockerfile.client
+    container_name: cve2026109618-attacker
+    networks:
+      - vuln-net
+    depends_on:
+      - php-vulnerable
+    # Unprivileged, ephemeral
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  vuln-net:
+    driver: bridge
+    internal: false

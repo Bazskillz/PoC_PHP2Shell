@@ -1,0 +1,14 @@
+# Fixed PHP 8.4.27 + Apache mod_php for comparison testing
+FROM php:8.4.27-apache
+
+RUN a2dismod mpm_event 2>/dev/null || true && \
+    a2dismod mpm_worker 2>/dev/null || true && \
+    a2enmod mpm_prefork
+
+RUN echo '<?php echo "PHP " . phpversion() . " OK\n"; ?>' > /var/www/html/index.php
+
+RUN echo 'display_errors = On' >> /usr/local/etc/php/conf.d/docker-php-errors.ini && \
+    echo 'error_reporting = E_ALL' >> /usr/local/etc/php/conf.d/docker-php-errors.ini && \
+    echo 'log_errors = On' >> /usr/local/etc/php/conf.d/docker-php-errors.ini
+
+EXPOSE 80

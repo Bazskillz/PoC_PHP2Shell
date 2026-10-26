@@ -1,0 +1,5 @@
+php-src-8.4.26/
+php-src-8.4.27/
+*.pyc
+__pycache__/
+.DS_Store
